@@ -1,7 +1,7 @@
 import subprocess
 
 
-def get_node_info(self):
+def get_node_info():
     """Get node system os version and serial."""
     version_dict = {}
     with open('/etc/os-release') as f:
@@ -12,15 +12,16 @@ def get_node_info(self):
             value = line.split('=')[1].strip().replace('\"', '')
             version_dict[key] = value
     cmd = ('dmidecode', '-s', 'system-serial-number')
-    serial = subprocess.check_output(*cmd)
+    serial = subprocess.check_output(cmd)
     hostname = subprocess.check_output(('hostname'))
-    {
-        'os': version_dict['NAME'],
-        'version': version_dict['VERSION_ID'],
-        'serial': serial.strip()
-    }
-    print '# HELP example_metric Metric read from /some/path/textfile/example.prom'
-    print '# TYPE example_metric untyped'
+
+    print '# HELP example_metric Metric'
+    print '# TYPE example_metric'
+    metric = 'node_info{serial="%s", os_family="%s", os_version="%s",' + \
+        'hostname="%s"}'
+    print(metric % (serial.strip(), version_dict['NAME'],
+                    version_dict['VERSION_ID'], hostname.strip()))
+
 
 if __name__ == "__main__":
     get_node_info()
